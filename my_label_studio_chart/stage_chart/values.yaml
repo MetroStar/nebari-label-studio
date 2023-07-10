@@ -1,0 +1,10 @@
+## Add default values for the dependencies charts here, if included, available at ./charts.
+## Include the name of the dependency as a top-level key to overrides those values.
+
+## For example
+# redis:
+#   key: value
+
+## Add default values for this Chart and Kubernetes resources in the ./templates directory.
+## Update the stage_values_overrides key in the nebari-config.yaml to modify these values.
+startup_greeting: "Hello from the values.yaml in your new NebariHelmStage!"
