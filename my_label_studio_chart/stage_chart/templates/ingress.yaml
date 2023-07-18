@@ -1,0 +1,26 @@
+{{- if .Values.ingress.enabled }}
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`{{ .Values.ingress.host }}`) && PathPrefix(`{{ .Values.ingress.path }}`)
+    {{- if .Values.auth.enabled }}
+    middlewares:
+    - name: traefik-forward-auth
+      namespace: {{ .Release.Namespace }}
+    {{- end }}
+    services:
+    - name: {{ .Release.Name }}-ls-app
+      namespace: {{ .Release.Namespace }}
+      passHostHeader: true
+      port: 80
+
+{{- end }}
