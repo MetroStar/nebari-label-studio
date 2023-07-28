@@ -1,0 +1,26 @@
+
+
+
+stages:
+- name: platform-default
+- name: label-studio-keycloak
+  type: keycloak
+  config:
+    client-name: label-studio
+    
+- name: label-studio
+  type: helm
+
+# - name: label-studio
+#   plugin: nebari-plugin-label-studio-chart
+#   dependencies:
+#   - stage: "02-infrastructure"
+#     alias: "infrastructure"
+#   - stage: "06-kubernetes-keycloak-configuration"
+#     alias: "keycloak-config"
+#   settings:
+#     namespace: label-studio
+#     values:
+#       auth:
+#         enabled: false
+

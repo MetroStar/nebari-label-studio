@@ -3,15 +3,15 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "my-label-studio-chart"
+name = "nebari-plugin-label-studio-chart"
 dynamic = ["version"]
 description = ''
 readme = "README.md"
 requires-python = ">=3.7"
-license = "MIT"
+license = "Apache-2.0"
 keywords = []
 authors = [
-  { name = "iameskild", email = "eskild.eriksen122@gmail.com" },
+  { name = "Scott Blair", email = "sblair@metrostar.com" },
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -24,23 +24,24 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = []
+dependencies = [
+  "nebari",
+  "nebari-helm-stage",
+]
 
 [project.urls]
-Documentation = "https://github.com/unknown/my-label-studio-chart#readme"
-Issues = "https://github.com/unknown/my-label-studio-chart/issues"
-Source = "https://github.com/unknown/my-label-studio-chart"
-
-[project.entry-points.nebari]
-my-label-studio-chart= "my_label_studio_chart"
+Documentation = "https://github.com/MetroStar/nebari-plugin-label-studio-chart#readme"
+Issues = "https://github.com/MetroStar/nebari-plugin-label-studio-chart/issues"
+Source = "https://github.com/MetroStar/nebari-plugin-label-studio-chart"
 
 [tool.hatch.version]
-path = "my_label_studio_chart/__about__.py"
+path = "src/nebari_plugin_label_studio_chart/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
   "coverage[toml]>=6.5",
   "pytest",
+  "kubernetes",
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
@@ -65,7 +66,7 @@ dependencies = [
   "ruff>=0.0.243",
 ]
 [tool.hatch.envs.lint.scripts]
-typing = "mypy --install-types --non-interactive {args:my_label_studio_chart tests}"
+typing = "mypy --install-types --non-interactive {args:src/nebari_plugin_label_studio_chart tests}"
 style = [
   "ruff {args:.}",
   "black --check --diff {args:.}",
@@ -131,7 +132,7 @@ unfixable = [
 ]
 
 [tool.ruff.isort]
-known-first-party = ["my_label_studio_chart"]
+known-first-party = ["nebari_plugin_label_studio_chart"]
 
 [tool.ruff.flake8-tidy-imports]
 ban-relative-imports = "all"
@@ -141,16 +142,16 @@ ban-relative-imports = "all"
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
 
 [tool.coverage.run]
-source_pkgs = ["my_label_studio_chart", "tests"]
+source_pkgs = ["nebari_plugin_label_studio_chart", "tests"]
 branch = true
 parallel = true
 omit = [
-  "my_label_studio_chart/__about__.py",
+  "src/nebari_plugin_label_studio_chart/__about__.py",
 ]
 
 [tool.coverage.paths]
-my_label_studio_chart = ["my_label_studio_chart", "*/my-label-studio-chart/my_label_studio_chart"]
-tests = ["tests", "*/my-label-studio-chart/tests"]
+nebari_plugin_label_studio_chart = ["src/nebari_plugin_label_studio_chart", "*/nebari-plugin-label-studio-chart/src/nebari_plugin_label_studio_chart"]
+tests = ["tests", "*/nebari-plugin-label-studio-chart/tests"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -158,3 +159,6 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
 ]
+
+[project.entry-points.nebari]
+nebari-plugin-label-studio-chart = "nebari_plugin_label_studio_chart"

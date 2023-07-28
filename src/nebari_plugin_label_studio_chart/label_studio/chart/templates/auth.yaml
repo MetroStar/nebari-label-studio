@@ -4,19 +4,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: traefik-forward-auth
+  name: {{ .Release.Name }}-traefik-forward-auth
   namespace: {{ .Release.Namespace }}
   labels:
-    app: traefik-forward-auth
+    app: {{ .Release.Name }}-traefik-forward-auth
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: traefik-forward-auth
+      app: {{ .Release.Name }}-traefik-forward-auth
   template:
     metadata:
       labels:
-        app: traefik-forward-auth
+        app: {{ .Release.Name }}-traefik-forward-auth
     spec:
       containers:
       - image: {{ .Values.auth.image }}:{{ .Values.auth.tag }}
@@ -35,22 +35,22 @@ spec:
         - name: PROVIDERS_OIDC_ISSUER_URL
           valueFrom:
             secretKeyRef:
-              name: traefik-forward-auth-env
+              name: {{ .Release.Name }}-traefik-forward-auth
               key: issuer_url
         - name: PROVIDERS_OIDC_CLIENT_ID
           valueFrom:
             secretKeyRef:
-              name: traefik-forward-auth-env
+              name: {{ .Release.Name }}-traefik-forward-auth
               key: client_id
         - name: PROVIDERS_OIDC_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
-              name: traefik-forward-auth-env
+              name: {{ .Release.Name }}-traefik-forward-auth
               key: client_secret
         - name: SECRET
           valueFrom:
             secretKeyRef:
-              name: traefik-forward-auth-env
+              name: {{ .Release.Name }}-traefik-forward-auth
               key: signing_key
         - name: DEFAULT_PROVIDER
           value: "oidc"
@@ -59,12 +59,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: traefik-forward-auth
+  name: {{ .Release.Name }}-traefik-forward-auth
   namespace: {{ .Release.Namespace }}
 spec:
   type: ClusterIP
   selector:
-    app: traefik-forward-auth
+    app: {{ .Release.Name }}-traefik-forward-auth
   ports:
   - port: {{ .Values.auth.service.port }}
     targetPort: http
@@ -75,12 +75,25 @@ spec:
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
-  name: traefik-forward-auth
+  name: {{ .Release.Name }}-traefik-forward-auth
   namespace: {{ .Release.Namespace }}
 spec:
   forwardAuth:
-    address: http://traefik-forward-auth.{{ .Release.Namespace }}:{{ .Values.auth.service.port }}/
+    address: http://{{ .Release.Name }}-traefik-forward-auth.{{ .Release.Namespace }}:{{ .Values.auth.service.port }}/
     authResponseHeaders:
     - X-Forwarded-User
+
+{{- if and .Values.auth.secret .Values.auth.secret.data }}
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-traefik-forward-auth
+  namespace: {{ .Release.Namespace }}
+type: Opaque
+stringData: {{ toYaml .Values.auth.secret.data | nindent 2 }}
+
+{{- end }}
 
 {{- end }}

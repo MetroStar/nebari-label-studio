@@ -1,0 +1,9 @@
+apiVersion: v2
+name: onyx-label-studio
+version: 1.1.0
+
+dependencies:
+- name: label-studio
+  repository: https://charts.heartex.com/
+  version: 1.1.5
+  

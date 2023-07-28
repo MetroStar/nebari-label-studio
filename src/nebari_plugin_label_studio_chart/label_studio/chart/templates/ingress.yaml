@@ -14,7 +14,7 @@ spec:
     match: Host(`{{ .Values.ingress.host }}`) && PathPrefix(`{{ .Values.ingress.path }}`)
     {{- if .Values.auth.enabled }}
     middlewares:
-    - name: traefik-forward-auth
+    - name: {{ .Release.Name }}-traefik-forward-auth
       namespace: {{ .Release.Namespace }}
     {{- end }}
     services:
