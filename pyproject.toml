@@ -5,9 +5,9 @@ build-backend = "hatchling.build"
 [project]
 name = "nebari-plugin-label-studio-chart"
 dynamic = ["version"]
-description = ''
+description = "MetroStar Onyx - Label Studio plugin for Nebari platform"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 license = "Apache-2.0"
 keywords = []
 authors = [
@@ -30,9 +30,15 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/MetroStar/nebari-plugin-label-studio-chart#readme"
-Issues = "https://github.com/MetroStar/nebari-plugin-label-studio-chart/issues"
-Source = "https://github.com/MetroStar/nebari-plugin-label-studio-chart"
+Documentation = "https://github.com/MetroStar/nebari-label-studio#readme"
+Issues = "https://github.com/MetroStar/nebari-label-studio/issues"
+Source = "https://github.com/MetroStar/nebari-label-studio"
+
+[tool.hatch.build.targets.sdist]
+include = ["src"]
+
+[tool.hatch.build.targets.wheel]
+include = ["src"]
 
 [tool.hatch.version]
 path = "src/nebari_plugin_label_studio_chart/__about__.py"
@@ -56,7 +62,7 @@ cov = [
 ]
 
 [[tool.hatch.envs.all.matrix]]
-python = ["3.7", "3.8", "3.9", "3.10", "3.11"]
+python = ["3.10", "3.11"]
 
 [tool.hatch.envs.lint]
 detached = true
