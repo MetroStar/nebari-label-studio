@@ -164,4 +164,4 @@ exclude_lines = [
 ]
 
 [project.entry-points.nebari]
-nebari-plugin-label-studio-chart = "nebari_plugin_label_studio_chart"
+nebari-plugin-label-studio-chart = "src.nebari_plugin_label_studio_chart"
