@@ -1,3 +1,8 @@
+variable "domain" {
+  description = "Domain"
+  type        = string
+}
+
 variable "realm_id" {
   description = "Keycloak realm_id"
   type        = string
@@ -31,4 +36,17 @@ variable "signing_key_ref" {
     namespace = string
   })
   default = null
+}
+
+variable "create_namespace" {
+  type = bool
+}
+
+variable "namespace" {
+  type = string
+}
+
+variable "overrides" {
+  type    = map(any)
+  default = {}
 }
