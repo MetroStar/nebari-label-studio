@@ -10,10 +10,11 @@ locals {
   create_namespace = var.create_namespace
   namespace        = var.namespace
   overrides        = var.overrides
+  auth_enabled     = var.auth_enabled
 
-  signing_key = (local.signing_key_ref == null
+  signing_key = local.auth_enabled ? (local.signing_key_ref == null
     ? random_password.signing_key[0].result
-  : one([for e in data.kubernetes_resource.signing_key[0].object.spec.template.spec.containers[0].env : e.value if e.name == "SECRET"]))
+  : one([for e in data.kubernetes_resource.signing_key[0].object.spec.template.spec.containers[0].env : e.value if e.name == "SECRET"])) : ""
 }
 
 resource "kubernetes_namespace" "this" {
@@ -37,10 +38,11 @@ resource "helm_release" "this" {
         host = local.domain
       }
       auth = {
+        enabled = local.auth_enabled
         secret = {
-          data = {
-            client_id     = keycloak_openid_client.this.client_id
-            client_secret = keycloak_openid_client.this.client_secret
+          data = local.auth_enabled ? {
+            client_id     = keycloak_openid_client.this[0].client_id
+            client_secret = keycloak_openid_client.this[0].client_secret
             signing_key   = local.signing_key
 
             issuer_url    = "${local.external_url}realms/${local.realm_id}"
@@ -50,7 +52,7 @@ resource "helm_release" "this" {
             jwks_url      = "${local.external_url}realms/${local.realm_id}/protocol/openid-connect/certs"
             logout_url    = "${local.external_url}realms/${local.realm_id}/protocol/openid-connect/logout"
             userinfo_url  = "${local.external_url}realms/${local.realm_id}/protocol/openid-connect/userinfo"
-          }
+          } : {}
         }
       }
       label-studio = {
@@ -66,6 +68,8 @@ resource "helm_release" "this" {
 }
 
 resource "keycloak_openid_client" "this" {
+  count = local.auth_enabled ? 1 : 0
+
   realm_id                     = local.realm_id
   name                         = local.client_id
   client_id                    = local.client_id
@@ -79,8 +83,10 @@ resource "keycloak_openid_client" "this" {
 }
 
 resource "keycloak_openid_user_client_role_protocol_mapper" "this" {
+  count = local.auth_enabled ? 1 : 0
+
   realm_id   = local.realm_id
-  client_id  = keycloak_openid_client.this.id
+  client_id  = keycloak_openid_client.this[0].id
   name       = "user-client-role-mapper"
   claim_name = "roles"
 
@@ -92,8 +98,10 @@ resource "keycloak_openid_user_client_role_protocol_mapper" "this" {
 }
 
 resource "keycloak_openid_group_membership_protocol_mapper" "this" {
+  count = local.auth_enabled ? 1 : 0
+
   realm_id   = local.realm_id
-  client_id  = keycloak_openid_client.this.id
+  client_id  = keycloak_openid_client.this[0].id
   name       = "group-membership-mapper"
   claim_name = "groups"
 
@@ -104,7 +112,7 @@ resource "keycloak_openid_group_membership_protocol_mapper" "this" {
 }
 
 data "kubernetes_resource" "signing_key" {
-  count = local.signing_key_ref == null ? 0 : 1
+  count = local.auth_enabled && local.signing_key_ref != null ? 1 : 0
 
   api_version = "apps/v1"
   kind        = local.signing_key_ref.kind == null ? "Deployment" : local.signing_key_ref.kind
@@ -116,7 +124,7 @@ data "kubernetes_resource" "signing_key" {
 }
 
 resource "random_password" "signing_key" {
-  count = local.signing_key_ref == null ? 1 : 0
+  count = local.auth_enabled && local.signing_key_ref == null ? 1 : 0
 
   length  = 32
   special = false

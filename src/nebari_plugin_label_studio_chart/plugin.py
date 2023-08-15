@@ -3,8 +3,12 @@ from typing import Any, Dict, Optional
 from nebari.schema import Base
 from _nebari.stages.base import NebariTerraformStage
 
+class LabelStudioAuthConfig(Base):
+    enabled: Optional[bool] = True
+
 class LabelStudioConfig(Base):
     namespace: Optional[str] = None
+    auth: LabelStudioAuthConfig = LabelStudioAuthConfig()
     values: Optional[Dict[str, Any]] = {}
 
 class InputSchema(Base):
@@ -42,5 +46,6 @@ class LabelStudioStage(NebariTerraformStage):
             "create_namespace": create_ns,
             "namespace": chart_ns,
             "overrides": self.config.label_studio.values,
+            "auth_enabled": self.config.label_studio.auth.enabled
         }
         

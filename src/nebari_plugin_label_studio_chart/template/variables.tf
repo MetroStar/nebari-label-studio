@@ -50,3 +50,7 @@ variable "overrides" {
   type    = map(any)
   default = {}
 }
+
+variable "auth_enabled" {
+  type = bool
+}
