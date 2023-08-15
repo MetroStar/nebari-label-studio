@@ -22,8 +22,12 @@ class LabelStudioStage(NebariTerraformStage):
 
     def input_vars(self, stage_outputs: Dict[str, Dict[str, Any]]):
         domain = stage_outputs["stages/04-kubernetes-ingress"]["domain"]
-        keycloak_url = f"{stage_outputs['stages/05-kubernetes-keycloak']['keycloak_credentials']['value']['url']}/auth/"
-        realm_id = stage_outputs["stages/06-kubernetes-keycloak-configuration"]["realm_id"]["value"]
+
+        keycloak_url = ""
+        realm_id = ""
+        if self.config.label_studio.auth.enabled:
+            keycloak_url = f"{stage_outputs['stages/05-kubernetes-keycloak']['keycloak_credentials']['value']['url']}/auth/"
+            realm_id = stage_outputs["stages/06-kubernetes-keycloak-configuration"]["realm_id"]["value"]
 
         chart_ns = self.config.label_studio.namespace
         create_ns = True
