@@ -1,5 +1,11 @@
 {{- if .Values.auth.enabled }}
 
+{{- $secretName := .Values.auth.existingSecret }}
+
+{{- if not $secretName }}
+{{- $secretName = (printf "%s-traefik-forward-auth" .Release.Name) }}
+{{- end }}
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -35,22 +41,22 @@ spec:
         - name: PROVIDERS_OIDC_ISSUER_URL
           valueFrom:
             secretKeyRef:
-              name: {{ .Release.Name }}-traefik-forward-auth
+              name: {{ $secretName }}
               key: issuer_url
         - name: PROVIDERS_OIDC_CLIENT_ID
           valueFrom:
             secretKeyRef:
-              name: {{ .Release.Name }}-traefik-forward-auth
+              name: {{ $secretName }}
               key: client_id
         - name: PROVIDERS_OIDC_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
-              name: {{ .Release.Name }}-traefik-forward-auth
+              name: {{ $secretName }}
               key: client_secret
         - name: SECRET
           valueFrom:
             secretKeyRef:
-              name: {{ .Release.Name }}-traefik-forward-auth
+              name: {{ $secretName }}
               key: signing_key
         - name: DEFAULT_PROVIDER
           value: "oidc"

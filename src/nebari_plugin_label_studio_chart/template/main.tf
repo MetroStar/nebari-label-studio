@@ -1,4 +1,5 @@
 locals {
+  name                = var.name
   domain              = var.domain
   realm_id            = var.realm_id
   client_id           = var.client_id
@@ -11,6 +12,8 @@ locals {
   namespace        = var.namespace
   overrides        = var.overrides
   auth_enabled     = var.auth_enabled
+
+  chart_namespace = local.create_namespace ? kubernetes_namespace.this[0].metadata[0].name : local.namespace
 
   signing_key = local.auth_enabled ? (local.signing_key_ref == null
     ? random_password.signing_key[0].result
@@ -26,9 +29,9 @@ resource "kubernetes_namespace" "this" {
 }
 
 resource "helm_release" "this" {
-  name      = "nebari-label-studio"
+  name      = local.name
   chart     = "./chart"
-  namespace = local.create_namespace ? kubernetes_namespace.this[0].metadata[0].name : local.namespace
+  namespace = local.chart_namespace
 
   dependency_update = true
 
@@ -38,22 +41,8 @@ resource "helm_release" "this" {
         host = local.domain
       }
       auth = {
-        enabled = local.auth_enabled
-        secret = {
-          data = local.auth_enabled ? {
-            client_id     = keycloak_openid_client.this[0].client_id
-            client_secret = keycloak_openid_client.this[0].client_secret
-            signing_key   = local.signing_key
-
-            issuer_url    = "${local.external_url}realms/${local.realm_id}"
-            discovery_url = "${local.external_url}realms/${local.realm_id}/.well-known/openid-configuration"
-            auth_url      = "${local.external_url}realms/${local.realm_id}/protocol/openid-connect/auth"
-            token_url     = "${local.external_url}realms/${local.realm_id}/protocol/openid-connect/token"
-            jwks_url      = "${local.external_url}realms/${local.realm_id}/protocol/openid-connect/certs"
-            logout_url    = "${local.external_url}realms/${local.realm_id}/protocol/openid-connect/logout"
-            userinfo_url  = "${local.external_url}realms/${local.realm_id}/protocol/openid-connect/userinfo"
-          } : {}
-        }
+        enabled        = local.auth_enabled
+        existingSecret = local.auth_enabled ? kubernetes_secret.auth[0].metadata[0].name : ""
       }
       label-studio = {
         global = {
@@ -109,6 +98,29 @@ resource "keycloak_openid_group_membership_protocol_mapper" "this" {
   add_to_id_token     = true
   add_to_access_token = true
   add_to_userinfo     = true
+}
+
+resource "kubernetes_secret" "auth" {
+  count = local.auth_enabled ? 1 : 0
+
+  metadata {
+    name      = "${local.name}-auth"
+    namespace = local.chart_namespace
+  }
+
+  data = {
+    client_id     = keycloak_openid_client.this[0].client_id
+    client_secret = keycloak_openid_client.this[0].client_secret
+    signing_key   = local.signing_key
+
+    issuer_url    = "${local.external_url}realms/${local.realm_id}"
+    discovery_url = "${local.external_url}realms/${local.realm_id}/.well-known/openid-configuration"
+    auth_url      = "${local.external_url}realms/${local.realm_id}/protocol/openid-connect/auth"
+    token_url     = "${local.external_url}realms/${local.realm_id}/protocol/openid-connect/token"
+    jwks_url      = "${local.external_url}realms/${local.realm_id}/protocol/openid-connect/certs"
+    logout_url    = "${local.external_url}realms/${local.realm_id}/protocol/openid-connect/logout"
+    userinfo_url  = "${local.external_url}realms/${local.realm_id}/protocol/openid-connect/userinfo"
+  }
 }
 
 data "kubernetes_resource" "signing_key" {

@@ -7,6 +7,7 @@ class LabelStudioAuthConfig(Base):
     enabled: Optional[bool] = True
 
 class LabelStudioConfig(Base):
+    name: Optional[str] = "label-studio"
     namespace: Optional[str] = None
     auth: LabelStudioAuthConfig = LabelStudioAuthConfig()
     values: Optional[Dict[str, Any]] = {}
@@ -36,6 +37,7 @@ class LabelStudioStage(NebariTerraformStage):
             create_ns = False
 
         return {
+            "name": self.config.label_studio.name,
             "domain": domain,
             "realm_id": realm_id,
             "client_id": self.name,

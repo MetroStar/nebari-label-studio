@@ -1,3 +1,8 @@
+variable "name" {
+  description = "Chart name"
+  type        = string
+}
+
 variable "domain" {
   description = "Domain"
   type        = string
