@@ -24,7 +24,24 @@ pip install nebari-plugin-label-studio-chart
 
 ## Configuration Details
 
-The Nebari Label Studio plugin offers various configuration options for customization:
+### Public
+Configuration of the Label Studio plugin is controlled through the `label_studio` section of the `nebari-config.yaml` for the environment.
+
+``` yaml
+label_studio:
+    # helm release name - default label-studio
+    name: label-studio
+    # target namespace - default (nebari global namespace)
+    namespace: label-studio
+    # enable or disable traefik auth proxy and keycloak integration
+    auth:
+        enabled: true
+    # helm chart values overrides
+    values: {}
+```
+
+### Internal
+The following configuration values apply to the internally managed terraform module and are indirectly controlled through related values in `nebari-config.yaml`.
 
 - `name`: Chart name for Helm release.
 - `domain`: Domain for the plugin's deployment.
