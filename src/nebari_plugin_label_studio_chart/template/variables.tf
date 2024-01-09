@@ -51,6 +51,33 @@ variable "namespace" {
   type = string
 }
 
+variable "affinity" {
+  type = object(
+    {
+      enabled  = optional(bool, true)
+      selector = optional(string, "")
+      selectors = optional(object(
+        {
+          app    = optional(string, "")
+          worker = optional(string, "")
+          db     = optional(string, "")
+          auth   = optional(string, "")
+        }
+      ))
+    }
+  )
+  default = {
+    enabled  = false
+    selector = "general"
+    selectors = {
+      app    = ""
+      worker = ""
+      db     = ""
+      auth   = ""
+    }
+  }
+}
+
 variable "overrides" {
   type    = map(any)
   default = {}

@@ -11,7 +11,16 @@ locals {
   create_namespace = var.create_namespace
   namespace        = var.namespace
   overrides        = var.overrides
-  auth_enabled     = var.auth_enabled
+  affinity = var.affinity != null && var.affinity.enabled ? {
+    enabled = true
+    selectors = {
+      for k, v in var.affinity.selectors : k => length(v) > 0 ? v : var.affinity.selector
+    }
+    } : {
+    enabled   = false
+    selectors = null
+  }
+  auth_enabled = var.auth_enabled
 
   chart_namespace = local.create_namespace ? kubernetes_namespace.this[0].metadata[0].name : local.namespace
 
@@ -43,12 +52,114 @@ resource "helm_release" "this" {
       auth = {
         enabled        = local.auth_enabled
         existingSecret = local.auth_enabled ? kubernetes_secret.auth[0].metadata[0].name : ""
+        affinity = local.affinity.enabled ? {
+          nodeAffinity = {
+            requiredDuringSchedulingIgnoredDuringExecution = {
+              nodeSelectorTerms = [
+                {
+                  matchExpressions = [
+                    {
+                      key      = "eks.amazonaws.com/nodegroup"
+                      operator = "In"
+                      values   = [local.affinity.selectors.auth]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        } : null
       }
       label-studio = {
         global = {
           extraEnvironmentVars = {
             LABEL_STUDIO_HOST = local.base_url
           }
+        }
+        app = {
+          affinity = local.affinity.enabled ? {
+            nodeAffinity = {
+              requiredDuringSchedulingIgnoredDuringExecution = {
+                nodeSelectorTerms = [
+                  {
+                    matchExpressions = [
+                      {
+                        key      = "eks.amazonaws.com/nodegroup"
+                        operator = "In"
+                        values   = [local.affinity.selectors.app]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          } : null
+        }
+        rqworker = {
+          affinity = local.affinity.enabled ? {
+            nodeAffinity = {
+              requiredDuringSchedulingIgnoredDuringExecution = {
+                nodeSelectorTerms = [
+                  {
+                    matchExpressions = [
+                      {
+                        key      = "eks.amazonaws.com/nodegroup"
+                        operator = "In"
+                        values   = [local.affinity.selectors.worker]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          } : null
+        }
+        postgresql = {
+          primary = {
+            affinity = local.affinity.enabled ? {
+              nodeAffinity = {
+                requiredDuringSchedulingIgnoredDuringExecution = {
+                  nodeSelectorTerms = [
+                    {
+                      matchExpressions = [
+                        {
+                          key      = "eks.amazonaws.com/nodegroup"
+                          operator = "In"
+                          values   = [local.affinity.selectors.db]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            } : null
+          }
+          readReplicas = {
+            affinity = local.affinity.enabled ? {
+              nodeAffinity = {
+                requiredDuringSchedulingIgnoredDuringExecution = {
+                  nodeSelectorTerms = [
+                    {
+                      matchExpressions = [
+                        {
+                          key      = "eks.amazonaws.com/nodegroup"
+                          operator = "In"
+                          values   = [local.affinity.selectors.db]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            } : null
+          }
+          backup = local.affinity.enabled ? {
+            cronjob = {
+              nodeSelector = {
+                "eks.amazonaws.com/nodegroup" = local.affinity.selectors.db
+              }
+            }
+          } : {}
         }
       }
     }),
