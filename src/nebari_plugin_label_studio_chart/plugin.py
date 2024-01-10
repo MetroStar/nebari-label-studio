@@ -1,4 +1,5 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
+
 
 from nebari.schema import Base
 from _nebari.stages.base import NebariTerraformStage
@@ -9,15 +10,15 @@ class LabelStudioAuthConfig(Base):
 
 
 class LabelStudioAffinitySelectorConfig(Base):
-    app: Optional[str] = "general"
-    worker: Optional[str] = "worker"
-    db: Optional[str] = "general"
-    auth: Optional[str] = "general"
+    default: str
+    worker: Optional[str] = ""
+    db: Optional[str] = ""
+    auth: Optional[str] = ""
 
 
 class LabelStudioAffinityConfig(Base):
     enabled: Optional[bool] = True
-    selectors: LabelStudioAffinitySelectorConfig = LabelStudioAffinitySelectorConfig()
+    selector: Union[LabelStudioAffinitySelectorConfig, str] = "general"
 
 
 class LabelStudioConfig(Base):
@@ -71,6 +72,11 @@ class LabelStudioStage(NebariTerraformStage):
             "create_namespace": create_ns,
             "namespace": chart_ns,
             "overrides": self.config.label_studio.values,
-            "affinity": self.config.label_studio.affinity,
+            "affinity": {
+                "enabled": self.config.label_studio.affinity.enabled,
+                "selector": self.config.label_studio.affinity.selector.__dict__
+                if isinstance(self.config.label_studio.affinity.selector, LabelStudioAffinitySelectorConfig)
+                else self.config.label_studio.affinity.selector,
+            },
             "auth_enabled": self.config.label_studio.auth.enabled,
         }

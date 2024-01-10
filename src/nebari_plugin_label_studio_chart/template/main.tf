@@ -11,14 +11,20 @@ locals {
   create_namespace = var.create_namespace
   namespace        = var.namespace
   overrides        = var.overrides
-  affinity = var.affinity != null && var.affinity.enabled ? {
+  affinity = var.affinity != null && lookup(var.affinity, "enabled", false) ? {
     enabled = true
-    selectors = {
-      for k, v in var.affinity.selectors : k => length(v) > 0 ? v : var.affinity.selector
-    }
+    selector = try(
+      { for k in ["default", "worker", "db", "auth"] : k => length(var.affinity.selector[k]) > 0 ? var.affinity.selector[k] : var.affinity.selector.default },
+      {
+        default = var.affinity.selector
+        worker  = var.affinity.selector
+        db      = var.affinity.selector
+        auth    = var.affinity.selector
+      },
+    )
     } : {
-    enabled   = false
-    selectors = null
+    enabled  = false
+    selector = null
   }
   auth_enabled = var.auth_enabled
 
@@ -61,7 +67,7 @@ resource "helm_release" "this" {
                     {
                       key      = "eks.amazonaws.com/nodegroup"
                       operator = "In"
-                      values   = [local.affinity.selectors.auth]
+                      values   = [local.affinity.selector.auth]
                     }
                   ]
                 }
@@ -86,7 +92,7 @@ resource "helm_release" "this" {
                       {
                         key      = "eks.amazonaws.com/nodegroup"
                         operator = "In"
-                        values   = [local.affinity.selectors.app]
+                        values   = [local.affinity.selector.default]
                       }
                     ]
                   }
@@ -105,7 +111,7 @@ resource "helm_release" "this" {
                       {
                         key      = "eks.amazonaws.com/nodegroup"
                         operator = "In"
-                        values   = [local.affinity.selectors.worker]
+                        values   = [local.affinity.selector.worker]
                       }
                     ]
                   }
@@ -125,7 +131,7 @@ resource "helm_release" "this" {
                         {
                           key      = "eks.amazonaws.com/nodegroup"
                           operator = "In"
-                          values   = [local.affinity.selectors.db]
+                          values   = [local.affinity.selector.db]
                         }
                       ]
                     }
@@ -144,7 +150,7 @@ resource "helm_release" "this" {
                         {
                           key      = "eks.amazonaws.com/nodegroup"
                           operator = "In"
-                          values   = [local.affinity.selectors.db]
+                          values   = [local.affinity.selector.db]
                         }
                       ]
                     }
@@ -156,7 +162,7 @@ resource "helm_release" "this" {
           backup = local.affinity.enabled ? {
             cronjob = {
               nodeSelector = {
-                "eks.amazonaws.com/nodegroup" = local.affinity.selectors.db
+                "eks.amazonaws.com/nodegroup" = local.affinity.selector.db
               }
             }
           } : {}
