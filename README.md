@@ -41,6 +41,16 @@ label_studio:
     # enable or disable traefik auth proxy and keycloak integration
     auth:
         enabled: true
+    # configure default affinity/selector for chart components
+    affinity:
+        enabled: true # default
+        selector: general # default
+        # -- or --
+        selector:
+            default: general
+            worker: worker
+            db: general
+            auth: general
     # helm chart values overrides
     values: {}
 ```
@@ -64,9 +74,6 @@ The plugin includes unit tests to validate its core functionalities:
 - **Constructor Test**: Verifies the default name and priority.
 - **Input Variables Test**: Validates domain, realm ID, client ID, and external URL settings.
 - **Default Namespace Test**: Tests the default namespace configuration.
-
-## Version Information
-- **Plugin Version**: 0.0.5
 
 ## License
 
