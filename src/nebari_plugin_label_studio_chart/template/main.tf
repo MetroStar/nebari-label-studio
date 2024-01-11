@@ -74,7 +74,7 @@ resource "helm_release" "this" {
               ]
             }
           }
-        } : null
+        } : {}
       }
       label-studio = {
         global = {
@@ -99,7 +99,7 @@ resource "helm_release" "this" {
                 ]
               }
             }
-          } : null
+          } : {}
         }
         rqworker = {
           affinity = local.affinity.enabled ? {
@@ -118,46 +118,18 @@ resource "helm_release" "this" {
                 ]
               }
             }
-          } : null
+          } : {}
         }
         postgresql = {
           primary = {
-            affinity = local.affinity.enabled ? {
-              nodeAffinity = {
-                requiredDuringSchedulingIgnoredDuringExecution = {
-                  nodeSelectorTerms = [
-                    {
-                      matchExpressions = [
-                        {
-                          key      = "eks.amazonaws.com/nodegroup"
-                          operator = "In"
-                          values   = [local.affinity.selector.db]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
-            } : null
+            nodeSelector = local.affinity.enabled ? {
+              "eks.amazonaws.com/nodegroup" = local.affinity.selector.db
+            } : {}
           }
           readReplicas = {
-            affinity = local.affinity.enabled ? {
-              nodeAffinity = {
-                requiredDuringSchedulingIgnoredDuringExecution = {
-                  nodeSelectorTerms = [
-                    {
-                      matchExpressions = [
-                        {
-                          key      = "eks.amazonaws.com/nodegroup"
-                          operator = "In"
-                          values   = [local.affinity.selector.db]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
-            } : null
+            nodeSelector = local.affinity.enabled ? {
+              "eks.amazonaws.com/nodegroup" = local.affinity.selector.db
+            } : {}
           }
           backup = local.affinity.enabled ? {
             cronjob = {
