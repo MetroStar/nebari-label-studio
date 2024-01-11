@@ -1,6 +1,11 @@
 
 # Nebari Plugin Label-Studio Chart
 
+[![PyPI - Version](https://img.shields.io/pypi/v/nebari-plugin-label-studio-chart.svg)](https://pypi.org/project/nebari-plugin-label-studio-chart)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nebari-plugin-label-studio-chart.svg)](https://pypi.org/project/nebari-plugin-label-studio-chart)
+
+-----
+
 ## Overview
 This plugin integrates Label Studio into the Nebari platform, allowing seamless labeling functionality within Nebari. Utilizing Python, Terraform, Kubernetes, and Helm charts, the plugin provides a configurable deployment and authentication through Keycloak.
 
