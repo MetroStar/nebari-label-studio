@@ -1,19 +1,37 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
+
 
 from nebari.schema import Base
 from _nebari.stages.base import NebariTerraformStage
 
+
 class LabelStudioAuthConfig(Base):
     enabled: Optional[bool] = True
+
+
+class LabelStudioAffinitySelectorConfig(Base):
+    default: str
+    worker: Optional[str] = ""
+    db: Optional[str] = ""
+    auth: Optional[str] = ""
+
+
+class LabelStudioAffinityConfig(Base):
+    enabled: Optional[bool] = True
+    selector: Union[LabelStudioAffinitySelectorConfig, str] = "general"
+
 
 class LabelStudioConfig(Base):
     name: Optional[str] = "label-studio"
     namespace: Optional[str] = None
     auth: LabelStudioAuthConfig = LabelStudioAuthConfig()
+    affinity: LabelStudioAffinityConfig = LabelStudioAffinityConfig()
     values: Optional[Dict[str, Any]] = {}
+
 
 class InputSchema(Base):
     label_studio: LabelStudioConfig = LabelStudioConfig()
+
 
 class LabelStudioStage(NebariTerraformStage):
     name = "label-studio"
@@ -27,7 +45,9 @@ class LabelStudioStage(NebariTerraformStage):
         keycloak_url = ""
         realm_id = ""
         if self.config.label_studio.auth.enabled:
-            keycloak_url = f"{stage_outputs['stages/05-kubernetes-keycloak']['keycloak_credentials']['value']['url']}/auth/"
+            keycloak_url = (
+                f"{stage_outputs['stages/05-kubernetes-keycloak']['keycloak_credentials']['value']['url']}/auth/"
+            )
             realm_id = stage_outputs["stages/06-kubernetes-keycloak-configuration"]["realm_id"]["value"]
 
         chart_ns = self.config.label_studio.namespace
@@ -52,6 +72,11 @@ class LabelStudioStage(NebariTerraformStage):
             "create_namespace": create_ns,
             "namespace": chart_ns,
             "overrides": self.config.label_studio.values,
-            "auth_enabled": self.config.label_studio.auth.enabled
+            "affinity": {
+                "enabled": self.config.label_studio.affinity.enabled,
+                "selector": self.config.label_studio.affinity.selector.__dict__
+                if isinstance(self.config.label_studio.affinity.selector, LabelStudioAffinitySelectorConfig)
+                else self.config.label_studio.affinity.selector,
+            },
+            "auth_enabled": self.config.label_studio.auth.enabled,
         }
-        

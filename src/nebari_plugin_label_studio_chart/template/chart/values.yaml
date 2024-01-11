@@ -12,11 +12,15 @@ auth:
     data: {}
   service:
     port: 4181
+  affinity: {}
+  tolerations: []
 
 logLevel: info
 
 label-studio:
   global:
+    image:
+      tag: ""
     extraEnvironmentVars:
       LABEL_STUDIO_HOST: "<placeholder>"
 
