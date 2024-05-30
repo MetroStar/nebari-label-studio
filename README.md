@@ -67,6 +67,23 @@ The following configuration values apply to the internally managed terraform mod
 - `overrides`: Map for overriding default configurations.
 - `auth_enabled`: Flag to enable/disable authentication.
 
+### Label Studio Version
+
+Label Studio is deployed via its offical Helm chart and will default to using the `develop` image tag if not specified.
+
+To set a Label Studio version, update your `nebari-config.yaml` to override the app image tag used in the helm chart.
+
+``` yaml
+label_studio:
+  namespace: label-studio
+  values:
+    # Deploy Label Studio 1.8.1
+    global:
+      image:
+        tag: "1.8.1"
+```
+See the [Label Studio helm chart documentation](https://labelstud.io/guide/helm_values) for all available configurations.
+
 ## Usage
 Once the extension is installed, the Label Studio Community Edition will be available at `https://[your-project-domain]/label-studio`.
 
