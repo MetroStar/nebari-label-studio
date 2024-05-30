@@ -67,6 +67,34 @@ The following configuration values apply to the internally managed terraform mod
 - `overrides`: Map for overriding default configurations.
 - `auth_enabled`: Flag to enable/disable authentication.
 
+### Label Studio Version
+
+Label Studio is deployed via its offical Helm chart and will default to using the `develop` image tag if not specified.
+
+To set a Label Studio version, update your `nebari-config.yaml` to override the app image tag used in the helm chart.
+
+``` yaml
+label_studio:
+  namespace: label-studio
+  values:
+    # Deploy Label Studio 1.8.1
+    global:
+      image:
+        tag: "1.8.1"
+```
+See the [Label Studio helm chart documentation](https://labelstud.io/guide/helm_values) for all available configurations.
+
+## Usage
+Once the extension is installed, the Label Studio Community Edition will be available at `https://[your-project-domain]/label-studio`.
+
+If authentication is enabled, any user attempting to access Label Studio will be required to login first with valid, active Nebari (Keycloak) credentials.  However, Label Studio accounts are separate from Nebari accounts.  Any user who has passed the authentication step above will then be able to create their own account.
+
+> NOTE: The Community Edition of Label Studio does not include role-based access permissions.  All users have access to the same functionality and can see all projects.
+
+Once a user has created their account, they can join the Label Studio 101 tutorial at the step [Label Studio 101 - Creating Your Project](https://labelstud.io/blog/zero-to-one-getting-started-with-label-studio/#creating-your-project).
+
+For more information on using Label Studio, refer to the [Label Studio documentation](https://labelstud.io/guide/).
+
 ## Testing Overview
 
 The plugin includes unit tests to validate its core functionalities:
